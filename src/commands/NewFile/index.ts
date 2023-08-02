@@ -3,13 +3,9 @@ import { Model, Class, Service } from "./generators";
 
 export default class NewFile {
   private inputValue: string;
-  private path: string;
-  private classType: string;
 
   constructor() {
     this.inputValue = "";
-    this.path = "";
-    this.classType = "";
   }
 
   process() {
@@ -17,7 +13,7 @@ export default class NewFile {
 
     input.onDidAccept(() => {
       this.inputValue = input.value;
-      this.createClass();
+      this.createFile();
       input.hide();
     });
 
@@ -26,29 +22,23 @@ export default class NewFile {
 
   // PRIVATE
 
-  private createClass() {
-    this.parseInput();
-
-    switch (this.classType) {
-      case "model":
-      case "m":
-        new Model(this.path).generate();
-      case "service":
-      case "s":
-        new Service(this.path).generate();
-      case "class":
-      case "c":
-      default:
-        new Class(this.path).generate();
+  private createFile() {
+    if (this.shouldGenerateModel()) {
+      return new Model(this.inputValue).generate();
     }
+
+    if (this.shouldGenerateService()) {
+      return new Service(this.inputValue).generate();
+    }
+
+    return new Class(this.inputValue).generate();
   }
 
-  private parseInput() {
-    const parts = this.inputValue.split(" ");
+  private shouldGenerateModel() {
+    return this.inputValue.toLowerCase().includes("model");
+  }
 
-    const classType = parts.length === 1 ? "class" : parts[0];
-
-    this.classType = classType;
-    this.path = parts[parts.length - 1];
+  private shouldGenerateService() {
+    return this.inputValue.toLowerCase().includes("service");
   }
 }

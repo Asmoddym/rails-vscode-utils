@@ -7,7 +7,7 @@ export class Model extends BaseGenerator {
 
   protected getFileContent(): string[] {
     return [
-      `class ${this.attributes.fileName} < ApplicationRecord`,
+      `class ${this.attributes.className} < ApplicationRecord`,
       "  has_paper_trail",
       "  acts_as_tenant :organization, optional: false",
       "",

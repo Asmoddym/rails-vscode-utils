@@ -3,9 +3,30 @@ import BaseGenerator from "./BaseGenerator";
 export class Service extends BaseGenerator {
   protected onCreate() {
     this.setPathPrefix("app/services");
-    this.setFileSuffix("_service");
+
+    if (!this.attributes.fileName.includes("_service")) {
+      this.setFileSuffix("_service");
+    }
   }
+
   protected getFileContent(): string[] {
-    return [`class ${this.attributes.fileName} < ApplicationService`, "end"];
+    const args = this.attributes.args;
+    const hasArgs = args.length > 0;
+
+    const content = [
+      `class ${this.attributes.className} < ApplicationService`,
+      hasArgs
+        ? `  attr_reader ${args.map((arg) => `:${arg}`).join(", ")}\n`
+        : null,
+      `  def initialize${hasArgs ? `(${args.join(", ")})` : ""}`,
+      ...this.attributes.args.map((arg) => `    @${arg} = ${arg}`),
+      "  end",
+      "",
+      "  def perform",
+      "  end",
+      "end",
+    ];
+
+    return content.filter((line) => line !== null) as NonNullable<string>[];
   }
 }
