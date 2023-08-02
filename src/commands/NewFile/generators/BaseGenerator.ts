@@ -95,10 +95,9 @@ export default class BaseGenerator {
 
     const uri = this.buildFileUri(filePath);
 
-    return vscode.workspace.fs.writeFile(
-      uri,
-      new TextEncoder().encode(this.buildFileContent()),
-    ).then(() => this.openFile(uri));
+    return vscode.workspace.fs
+      .writeFile(uri, new TextEncoder().encode(this.buildFileContent()))
+      .then(() => this.openFile(uri));
   }
 
   private buildFileContent(): string {
