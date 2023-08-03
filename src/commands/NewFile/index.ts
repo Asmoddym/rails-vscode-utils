@@ -24,7 +24,10 @@ export default class NewFile {
 
   private createFile() {
     if (this.shouldGenerateModel()) {
-      return new Model(this.inputValue).generate();
+      const valueParts = this.inputValue.split(" ");
+      valueParts.shift();
+
+      return new Model(valueParts.join(" ")).generate();
     }
 
     if (this.shouldGenerateService()) {
