@@ -18,15 +18,23 @@ export class Service extends BaseGenerator {
       hasArgs
         ? `  attr_reader ${args.map((arg) => `:${arg}`).join(", ")}\n`
         : null,
-      `  def initialize${hasArgs ? `(${args.join(", ")})` : ""}`,
-      ...this.attributes.args.map((arg) => `    @${arg} = ${arg}`),
-      "  end",
-      "",
+      ...[hasArgs ? this.generateCustomInitialize() : [null]],
       "  def perform",
       "  end",
       "end",
     ];
 
     return content.filter((line) => line !== null) as NonNullable<string>[];
+  }
+
+  private generateCustomInitialize(): string[] {
+    return [
+      `def initialize(${args.join(", ")})`,
+      ...this.attributes.args.map((arg) => `    @${arg} = ${arg}`),
+      "",
+      "    super",
+      "  end",
+      "",
+    ];
   }
 }
