@@ -10,13 +10,14 @@ export class Service extends BaseGenerator {
   }
 
   protected getFileContent(): string[] {
-    const args = this.attributes.args;
-    const hasArgs = args.length > 0;
+    const hasArgs = this.attributes.args.length > 0;
 
     const content = [
       `class ${this.attributes.className} < ApplicationService`,
       hasArgs
-        ? `  attr_reader ${args.map((arg) => `:${arg}`).join(", ")}\n`
+        ? `  attr_reader ${this.attributes.args
+            .map((arg) => `:${arg}`)
+            .join(", ")}\n`
         : null,
       ...[hasArgs ? this.generateCustomInitialize() : [null]],
       "  def perform",
@@ -29,7 +30,7 @@ export class Service extends BaseGenerator {
 
   private generateCustomInitialize(): string[] {
     return [
-      `def initialize(${args.join(", ")})`,
+      `def initialize(${this.attributes.args.join(", ")})`,
       ...this.attributes.args.map((arg) => `    @${arg} = ${arg}`),
       "",
       "    super",

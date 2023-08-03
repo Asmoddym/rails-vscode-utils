@@ -2,22 +2,14 @@ import * as vscode from "vscode";
 
 import NewFile from "./commands/NewFile";
 
+import { rubyHook } from "./saveHooks/ruby";
+
+import { getCurrentDocumentExtension } from "./helpers";
+
 export function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onWillSaveTextDocument(() => {
-    const document = vscode.window.activeTextEditor?.document;
-    const documentContent = document?.getText();
-    const extension = document?.fileName?.split(".")?.pop();
-
-    if (
-      extension === "rb" &&
-      !documentContent?.includes("# frozen_string_literal: true")
-    ) {
-      vscode.window.activeTextEditor?.edit((editor) => {
-        editor.insert(
-          new vscode.Position(0, 0),
-          "# frozen_string_literal: true\n\n",
-        );
-      });
+    if (getCurrentDocumentExtension() === "rb") {
+      rubyHook();
     }
   });
 
