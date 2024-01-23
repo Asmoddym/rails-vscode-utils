@@ -4,6 +4,15 @@ import { TextEncoder } from "util";
 const camelToSnakeCase = (str: string) =>
   str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
+const snakeToCamelCase = (input: string) =>
+  input
+    .split("_")
+    .reduce(
+      (res, word, i) =>
+        `${res}${word.charAt(0).toUpperCase()}${word.substr(1).toLowerCase()}`,
+      "",
+    );
+
 export default class BaseGenerator {
   protected attributes: {
     path: string[];
@@ -26,10 +35,11 @@ export default class BaseGenerator {
       args = joined.substring(0, joined.length - 1).split(", ");
     }
 
-    const className =
+    const className = snakeToCamelCase(
       pathParts.length === 1
         ? pathParts[0]
-        : pathParts.splice(pathParts.length - 1, 1)[0];
+        : pathParts.splice(pathParts.length - 1, 1)[0],
+    );
 
     let fileName = camelToSnakeCase(className);
     fileName =
@@ -39,8 +49,8 @@ export default class BaseGenerator {
       fileName,
       className,
       args,
-      path: pathParts.map((part) => part.toLowerCase()),
-      namespaces: pathParts,
+      path: pathParts.map((part) => camelToSnakeCase(part.toLowerCase())),
+      namespaces: pathParts.map((part) => snakeToCamelCase(part)),
     };
 
     this.workspacePath = vscode.workspace.workspaceFolders
@@ -53,9 +63,7 @@ export default class BaseGenerator {
   }
 
   protected onCreate() {}
-  protected setNamespaces(namespaces: string[]) {
-    this.attributes.namespaces = namespaces;
-  }
+
   protected getFileContent(): string[] {
     throw new Error("Not implemented");
   }
@@ -111,9 +119,10 @@ export default class BaseGenerator {
 
     text +=
       fileContent
-        .map(
-          (line: string) =>
-            `${"  ".repeat(this.attributes.namespaces.length)}${line}`,
+        .map((line: string) =>
+          line.length === 0
+            ? ""
+            : `${"  ".repeat(this.attributes.namespaces.length)}${line}`,
         )
         .join("\n") + "\n";
 

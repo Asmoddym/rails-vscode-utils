@@ -21,7 +21,6 @@ export class Service extends BaseGenerator {
             .join(", ")}\n`
         : null,
       ...(hasArgs ? this.generateCustomInitialize() : [null]),
-      "",
       "  def perform",
       "  end",
       "end",

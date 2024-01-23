@@ -7,11 +7,11 @@ import { rubyHook } from "./saveHooks/ruby";
 import { getCurrentDocumentExtension } from "./helpers";
 
 export function activate(context: vscode.ExtensionContext) {
-  vscode.workspace.onWillSaveTextDocument(() => {
-    if (getCurrentDocumentExtension() === "rb") {
-      rubyHook();
-    }
-  });
+  // vscode.workspace.onWillSaveTextDocument(() => {
+  //   if (getCurrentDocumentExtension() === "rb") {
+  //     rubyHook();
+  //   }
+  // });
 
   const disposables = [
     vscode.commands.registerCommand("rails-vscode-utils.newFile", () => {
