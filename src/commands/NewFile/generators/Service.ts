@@ -13,13 +13,15 @@ export class Service extends BaseGenerator {
     const hasArgs = this.attributes.args.length > 0;
 
     const content = [
+      `# ${this.attributes.namespaces.join("::")} ${this.attributes.className}`,
       `class ${this.attributes.className} < ApplicationService`,
       hasArgs
         ? `  attr_reader ${this.attributes.args
             .map((arg) => `:${arg}`)
             .join(", ")}\n`
         : null,
-      ...[hasArgs ? this.generateCustomInitialize() : [null]],
+      ...(hasArgs ? this.generateCustomInitialize() : [null]),
+      "",
       "  def perform",
       "  end",
       "end",
@@ -30,11 +32,13 @@ export class Service extends BaseGenerator {
 
   private generateCustomInitialize(): string[] {
     return [
-      `def initialize(${this.attributes.args.join(", ")})`,
-      ...this.attributes.args.map((arg) => `    @${arg} = ${arg}`),
+      `  def initialize(${this.attributes.args.join(", ")})`,
+      ...this.attributes.args.map((arg) => {
+        return `    @${arg} = ${arg}`;
+      }),
       "",
-      "    super",
-      "  end",
+      `    super`,
+      `  end`,
       "",
     ];
   }
