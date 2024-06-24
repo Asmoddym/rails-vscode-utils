@@ -41,7 +41,14 @@ export default class NewFile {
     return this.inputValue.toLowerCase().includes("model");
   }
 
+  private shouldGenerateSpec() {
+    return this.inputValue.toLowerCase().includes("_spec");
+  }
+
   private shouldGenerateService() {
-    return this.inputValue.toLowerCase().includes("service");
+    return (
+      this.inputValue.toLowerCase().includes("_service") &&
+      !this.shouldGenerateSpec()
+    );
   }
 }

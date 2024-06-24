@@ -13,12 +13,27 @@ const snakeToCamelCase = (input: string) =>
       "",
     );
 
+const computeFileMetadata = (raw: string) => {
+  const parts = raw.split("(");
+  const rawPath = parts[0];
+  const rawArgs = parts[1]?.split(",") || [];
+
+  let rawPathParts = rawPath.split("/").map((item) => item.replace(/ /g, "_"));
+  const rawFileName = rawPathParts.pop() as string;
+
+  if (rawFileName?.includes("_service") && rawPathParts[0] !== "app") {
+    rawPathParts = ["app", "services", ...rawPathParts];
+  }
+
+  return { fileName: rawFileName, path: rawPathParts, args: rawArgs };
+};
+
 export default class BaseGenerator {
   protected attributes: {
     path: string[];
     fileName: string;
     className: string;
-    namespaces: string[];
+    modules: string[];
     args: string[];
   };
 
@@ -26,31 +41,14 @@ export default class BaseGenerator {
   private fileSuffix: string;
 
   constructor(data: string) {
-    const splittedData = data.split("(");
-    let pathParts = splittedData.splice(0, 1).join("").split("::");
-    let args: string[] = [];
-
-    if (splittedData.length) {
-      const joined = splittedData.join("");
-      args = joined.substring(0, joined.length - 1).split(", ");
-    }
-
-    const className = snakeToCamelCase(
-      pathParts.length === 1
-        ? pathParts[0]
-        : pathParts.splice(pathParts.length - 1, 1)[0],
-    );
-
-    let fileName = camelToSnakeCase(className);
-    fileName =
-      fileName[0] === "_" ? fileName.substring(1, fileName.length) : fileName;
+    const { fileName, path, args } = computeFileMetadata(data);
 
     this.attributes = {
       fileName,
-      className,
+      path, //: path.map((part) => camelToSnakeCase(part.toLowerCase())),
+      className: snakeToCamelCase(fileName),
       args,
-      path: pathParts.map((part) => camelToSnakeCase(part.toLowerCase())),
-      namespaces: pathParts.map((part) => snakeToCamelCase(part)),
+      modules: path.slice(2),
     };
 
     this.workspacePath = vscode.workspace.workspaceFolders
@@ -111,7 +109,7 @@ export default class BaseGenerator {
   private buildFileContent(): string {
     let text = "# frozen_string_literal: true\n\n";
 
-    this.attributes.namespaces.forEach((namespace: string, i: number) => {
+    this.attributes.modules.forEach((namespace: string, i: number) => {
       text += `${"  ".repeat(i)}module ${namespace}\n`;
     });
 
@@ -122,12 +120,12 @@ export default class BaseGenerator {
         .map((line: string) =>
           line.length === 0
             ? ""
-            : `${"  ".repeat(this.attributes.namespaces.length)}${line}`,
+            : `${"  ".repeat(this.attributes.modules.length)}${line}`,
         )
         .join("\n") + "\n";
 
-    this.attributes.namespaces.forEach((_: string, i: number) => {
-      text += `${"  ".repeat(this.attributes.namespaces.length - 1 - i)}end\n`;
+    this.attributes.modules.forEach((_: string, i: number) => {
+      text += `${"  ".repeat(this.attributes.modules.length - 1 - i)}end\n`;
     });
 
     return text;

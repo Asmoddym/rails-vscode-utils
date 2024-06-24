@@ -13,7 +13,7 @@ export class Service extends BaseGenerator {
     const hasArgs = this.attributes.args.length > 0;
 
     const content = [
-      `# ${this.attributes.namespaces.join("::")} ${this.attributes.className}`,
+      `# ${this.attributes.modules.join("::")} ${this.attributes.className}`,
       `class ${this.attributes.className} < ApplicationService`,
       hasArgs
         ? `  attr_reader ${this.attributes.args
