@@ -2,7 +2,7 @@
   "name": "rails-vscode-utils",
   "displayName": "rails-vscode-utils",
   "description": "Rails VSCode utils",
-  "version": "0.5.0",
+  "version": "0.6.2",
   "engines": {
     "vscode": "^1.79.0"
   },

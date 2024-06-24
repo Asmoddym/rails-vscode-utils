@@ -2,10 +2,8 @@ import BaseGenerator from "./BaseGenerator";
 
 export class Service extends BaseGenerator {
   protected onCreate() {
-    this.setPathPrefix("app/services");
-
-    if (!this.attributes.fileName.includes("_service")) {
-      this.setFileSuffix("_service");
+    if (this.attributes.fileName.includes("_service.rb")) {
+      this.setPathPrefix("app/services");
     }
   }
 

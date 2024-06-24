@@ -16,16 +16,16 @@ const snakeToCamelCase = (input: string) =>
 const computeFileMetadata = (raw: string) => {
   const parts = raw.split("(");
   const rawPath = parts[0];
-  const rawArgs = parts[1]?.split(",") || [];
+  const rawArgs =
+    parts[1]?.split(",")?.map((item) => item.replace(/[\) ]/g, "")) || [];
 
   let rawPathParts = rawPath.split("/").map((item) => item.replace(/ /g, "_"));
   const rawFileName = rawPathParts.pop() as string;
+  const fileName = rawFileName.includes(".rb")
+    ? rawFileName
+    : `${rawFileName}.rb`;
 
-  if (rawFileName?.includes("_service") && rawPathParts[0] !== "app") {
-    rawPathParts = ["app", "services", ...rawPathParts];
-  }
-
-  return { fileName: rawFileName, path: rawPathParts, args: rawArgs };
+  return { fileName, path: rawPathParts, args: rawArgs };
 };
 
 export default class BaseGenerator {
@@ -45,10 +45,10 @@ export default class BaseGenerator {
 
     this.attributes = {
       fileName,
-      path, //: path.map((part) => camelToSnakeCase(part.toLowerCase())),
-      className: snakeToCamelCase(fileName),
+      path,
+      className: snakeToCamelCase(fileName.split(".rb")[0]),
       args,
-      modules: path.slice(2),
+      modules: [],
     };
 
     this.workspacePath = vscode.workspace.workspaceFolders
@@ -58,6 +58,10 @@ export default class BaseGenerator {
     this.fileSuffix = "";
 
     this.onCreate();
+
+    this.attributes.modules = this.attributes.path
+      .slice(2)
+      .map((item) => snakeToCamelCase(item));
   }
 
   protected onCreate() {}
@@ -79,10 +83,6 @@ export default class BaseGenerator {
       .flat();
   }
 
-  protected setFileSuffix(suffix: string) {
-    this.fileSuffix = suffix;
-  }
-
   // Utils
 
   private createPathDirectory() {
@@ -93,11 +93,7 @@ export default class BaseGenerator {
 
   private generateFile() {
     const filePath =
-      this.attributes.path.join("/") +
-      "/" +
-      this.attributes.fileName +
-      this.fileSuffix +
-      ".rb";
+      this.attributes.path.join("/") + "/" + this.attributes.fileName;
 
     const uri = this.buildFileUri(filePath);
 

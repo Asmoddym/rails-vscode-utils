@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Model, Class, Service } from "./generators";
+import { Service } from "./generators";
 
 export default class NewFile {
   private inputValue: string;
@@ -23,32 +23,21 @@ export default class NewFile {
   // PRIVATE
 
   private createFile() {
-    if (this.shouldGenerateModel()) {
-      const valueParts = this.inputValue.split(" ");
-      valueParts.shift();
+    // if (this.shouldGenerateService()) {
+    //   return new Service(this.inputValue).generate();
+    // }
 
-      return new Model(valueParts.join(" ")).generate();
-    }
-
-    if (this.shouldGenerateService()) {
-      return new Service(this.inputValue).generate();
-    }
-
-    return new Class(this.inputValue).generate();
-  }
-
-  private shouldGenerateModel() {
-    return this.inputValue.toLowerCase().includes("model");
+    return new Service(this.inputValue).generate();
   }
 
   private shouldGenerateSpec() {
     return this.inputValue.toLowerCase().includes("_spec");
   }
 
-  private shouldGenerateService() {
-    return (
-      this.inputValue.toLowerCase().includes("_service") &&
-      !this.shouldGenerateSpec()
-    );
-  }
+  // private shouldGenerateService() {
+  //   return (
+  //     this.inputValue.toLowerCase().includes("_service") &&
+  //     !this.shouldGenerateSpec()
+  //   );
+  // }
 }
