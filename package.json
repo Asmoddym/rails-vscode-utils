@@ -2,7 +2,7 @@
   "name": "rails-vscode-utils",
   "displayName": "rails-vscode-utils",
   "description": "Rails VSCode utils",
-  "version": "0.6.2",
+  "version": "0.8.3",
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -18,8 +18,21 @@
       {
         "command": "rails-vscode-utils.newFile",
         "title": "Rails Utils: New file"
+      },
+      {
+        "command": "rails-vscode-utils.newAssociatedSpec",
+        "title": "Create associated specsy",
+        "enablement": "resourceLangId == ruby"
       }
-    ]
+
+    ],
+    "menus": {
+      "explorer/context": [{
+        "when": "resourceLangId == ruby",
+        "command": "rails-vscode-utils.newAssociatedSpec",
+        "group": "navigation"
+      }]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

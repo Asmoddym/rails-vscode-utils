@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Service } from "./generators";
+import { Service, Spec } from "./generators";
 
 export default class NewFile {
   private inputValue: string;
@@ -8,16 +8,28 @@ export default class NewFile {
     this.inputValue = "";
   }
 
-  process() {
-    let input: vscode.InputBox = vscode.window.createInputBox();
+  process(arg?: string) {
+    if (arg) {
+      const workspacePath = vscode.workspace.workspaceFolders
+      ? vscode.workspace.workspaceFolders[0].uri.path
+      : "";
 
-    input.onDidAccept(() => {
-      this.inputValue = input.value;
-      this.createFile();
-      input.hide();
-    });
+      this.inputValue = arg.split(workspacePath + "/")[1].split(".rb")[0] + "_spec.rb";
+      this.inputValue = this.inputValue.replace("app/", "");
+      this.inputValue = this.inputValue.replace("services/", "");
 
-    input.show();
+      return this.createFile(); 
+    } else {
+      let input: vscode.InputBox = vscode.window.createInputBox();
+
+      input.onDidAccept(() => {
+        this.inputValue = input.value;
+        this.createFile();
+        input.hide();
+      });
+
+      input.show();
+    }
   }
 
   // PRIVATE
@@ -26,6 +38,10 @@ export default class NewFile {
     // if (this.shouldGenerateService()) {
     //   return new Service(this.inputValue).generate();
     // }
+
+    if (this.shouldGenerateSpec()) {
+      return new Spec(this.inputValue).generate();
+    }
 
     return new Service(this.inputValue).generate();
   }

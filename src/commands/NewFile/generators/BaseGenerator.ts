@@ -1,34 +1,10 @@
 import * as vscode from "vscode";
 import { TextEncoder } from "util";
-
-const camelToSnakeCase = (str: string) =>
-  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-
-const snakeToCamelCase = (input: string) =>
-  input
-    .split("_")
-    .reduce(
-      (res, word, i) =>
-        `${res}${word.charAt(0).toUpperCase()}${word.substr(1).toLowerCase()}`,
-      "",
-    );
-
-const computeFileMetadata = (raw: string) => {
-  const parts = raw.split("(");
-  const rawPath = parts[0];
-  const rawArgs =
-    parts[1]?.split(",")?.map((item) => item.replace(/[\) ]/g, "")) || [];
-
-  let rawPathParts = rawPath.split("/").map((item) => item.replace(/ /g, "_"));
-  const rawFileName = rawPathParts.pop() as string;
-  const fileName = rawFileName.includes(".rb")
-    ? rawFileName
-    : `${rawFileName}.rb`;
-
-  return { fileName, path: rawPathParts, args: rawArgs };
-};
+import snakeToCamelCase from "../../../helpers/snakeToCamelCase";
 
 export default class BaseGenerator {
+  protected rawInput: string;
+
   protected attributes: {
     path: string[];
     fileName: string;
@@ -38,30 +14,25 @@ export default class BaseGenerator {
   };
 
   private workspacePath: string;
-  private fileSuffix: string;
 
   constructor(data: string) {
-    const { fileName, path, args } = computeFileMetadata(data);
+    this.rawInput = data;
+
+    const { fileName, path, args } = this.computeFileMetadata(data);
 
     this.attributes = {
       fileName,
       path,
       className: snakeToCamelCase(fileName.split(".rb")[0]),
       args,
-      modules: [],
+      modules: (path[1] === "services" ? path.slice(2) : path).map((item) => snakeToCamelCase(item))
     };
 
     this.workspacePath = vscode.workspace.workspaceFolders
       ? vscode.workspace.workspaceFolders[0].uri.path
       : "";
 
-    this.fileSuffix = "";
-
     this.onCreate();
-
-    this.attributes.modules = this.attributes.path
-      .slice(2)
-      .map((item) => snakeToCamelCase(item));
   }
 
   protected onCreate() {}
@@ -69,6 +40,8 @@ export default class BaseGenerator {
   protected getFileContent(): string[] {
     throw new Error("Not implemented");
   }
+
+  protected getFileHeaders(): string[] { return []; }
 
   public generate() {
     this.createPathDirectory().then(() => {
@@ -105,6 +78,10 @@ export default class BaseGenerator {
   private buildFileContent(): string {
     let text = "# frozen_string_literal: true\n\n";
 
+    if (this.getFileHeaders().length > 0) {
+      text += this.getFileHeaders().join("\n") + "\n\n";
+    }
+
     this.attributes.modules.forEach((namespace: string, i: number) => {
       text += `${"  ".repeat(i)}module ${namespace}\n`;
     });
@@ -134,4 +111,21 @@ export default class BaseGenerator {
   private openFile(uri: vscode.Uri) {
     vscode.commands.executeCommand("vscode.open", uri);
   }
+
+  // Parsing
+
+  private computeFileMetadata = (raw: string) => {
+    const parts = raw.split("(");
+    const rawPath = parts[0];
+    const rawArgs =
+      parts[1]?.split(",")?.map((item) => item.replace(/[\) ]/g, "")) || [];
+
+    let rawPathParts = rawPath.split("/").map((item) => item.replace(/ /g, "_"));
+    const rawFileName = rawPathParts.pop() as string;
+    const fileName = rawFileName.includes(".rb")
+      ? rawFileName
+      : `${rawFileName}.rb`;
+
+    return { fileName, path: rawPathParts, args: rawArgs };
+  };
 }

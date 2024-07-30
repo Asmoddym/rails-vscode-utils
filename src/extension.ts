@@ -17,6 +17,10 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("rails-vscode-utils.newFile", () => {
       new NewFile().process();
     }),
+
+    vscode.commands.registerCommand("rails-vscode-utils.newAssociatedSpec", (...args) => {
+      new NewFile().process(args[0].path);
+    }),
   ];
 
   disposables.forEach((disposable) => {
